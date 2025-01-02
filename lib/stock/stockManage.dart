@@ -4,6 +4,14 @@ import 'package:railrock/homePage.dart';
 import 'package:railrock/searchPage.dart';
 import 'package:railrock/stock/stockEnroll.dart';
 import 'package:railrock/stock/stockDetailInfo.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
+List<Stock> displayStocks = allStocks; // Main List
+List<Color> colorInset = [
+  //Color List
+  Color.fromRGBO(118, 118, 118, 100),
+  Color.fromRGBO(255, 80, 80, 100)
+];
 
 class Stockmanage extends StatefulWidget {
   const Stockmanage({super.key});
@@ -12,13 +20,17 @@ class Stockmanage extends StatefulWidget {
   State<Stockmanage> createState() => _StockmanageState();
 }
 
-List<Stock> displayStocks = stocks;
-List<Color> colorInset = [
-  Color.fromRGBO(118, 118, 118, 100),
-  Color.fromRGBO(255, 80, 80, 100)
-];
-
 class _StockmanageState extends State<Stockmanage> {
+  @override
+  void initState() {
+    super.initState();
+    updateScreen();
+  }
+
+  void updateScreen() {
+    setState(() {});
+  }
+
   Color firstCo = colorInset[1];
   Color secCo = colorInset[0];
   Color thirdCo = colorInset[0];
@@ -31,6 +43,7 @@ class _StockmanageState extends State<Stockmanage> {
 
     return Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           title: GestureDetector(
             onTap: () {
               Navigator.push(
@@ -57,8 +70,11 @@ class _StockmanageState extends State<Stockmanage> {
                 )),
             IconButton(
                 onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => Stockenroll()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              Stockenroll(updateStock: updateScreen)));
                 },
                 icon: Icon(
                   Icons.add,
@@ -66,11 +82,7 @@ class _StockmanageState extends State<Stockmanage> {
                 ))
           ],
         ),
-        body: body(screenSize));
-  }
-
-  void updateStock() {
-    setState(() {});
+        body: Container(child: body(screenSize)));
   }
 
   Widget body(Size screenSize) {
@@ -88,7 +100,7 @@ class _StockmanageState extends State<Stockmanage> {
                       thirdCo = colorInset[0];
                       forthCo = colorInset[0];
                       fifthCo = colorInset[0];
-                      displayStocks = stocks;
+                      displayStocks = allStocks;
                     });
                   },
                   child: Text("전체",
@@ -189,7 +201,7 @@ class _StockmanageState extends State<Stockmanage> {
               final carrier = displayStocks[index];
               return StockCard(
                 currentStock: carrier,
-                updateStock: updateStock,
+                updateStock: updateScreen,
               );
             },
           ),
@@ -202,7 +214,7 @@ class _StockmanageState extends State<Stockmanage> {
 class StockCard extends StatefulWidget {
   final Stock currentStock;
   final updateStock;
-  StockCard({
+  const StockCard({
     required this.currentStock,
     required this.updateStock,
   });
@@ -235,15 +247,13 @@ class _StockCardState extends State<StockCard> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                child: Text(
-                  widget.currentStock.title,
-                  style: TextStyle(
-                      fontFamily: 'Pretendard',
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5),
-                ),
+              Text(
+                widget.currentStock.title,
+                style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5),
               ),
               SizedBox(
                 height: 3,
@@ -257,87 +267,92 @@ class _StockCardState extends State<StockCard> {
                     height: 100,
                     decoration: BoxDecoration(
                         border: Border.all(
-                            width: 3, color: Color.fromRGBO(255, 80, 80, 100)),
+                            width: 3, color: imageBoarderColor(percentage)),
                         borderRadius: BorderRadius.circular(500)),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(500),
-                      child: Image.asset(
-                        widget.currentStock.imagePath,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+                        borderRadius: BorderRadius.circular(500),
+                        child: widget.currentStock.imageUrl == ''
+                            ? Image.asset(
+                                'assets/images/ssong.png',
+                                fit: BoxFit.cover,
+                              )
+                            : CachedNetworkImage(
+                                imageUrl: widget.currentStock.imageUrl,
+                                placeholder: (context, url) =>
+                                    CircularProgressIndicator(),
+                                errorWidget: (context, url, error) =>
+                                    Icon(Icons.error),
+                              )),
                   ), //이미지
                   SizedBox(
                     width: screenWidth * 0.1,
                   ),
-                  Container(
-                    child: Row(
-                      children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              widget.currentStock.stocks.toString(),
-                              style: TextStyle(
-                                  fontSize: 25, fontWeight: FontWeight.w300),
+                  Row(
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            widget.currentStock.stocks.toString(),
+                            style: TextStyle(
+                                fontSize: 25, fontWeight: FontWeight.w300),
+                          ),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Text(
+                            "재고",
+                            style: TextStyle(
+                              color: Color.fromRGBO(118, 118, 118, 100),
                             ),
-                            SizedBox(
-                              height: 5,
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        width: screenWidth * 0.09,
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            widget.currentStock.expectedToInStock.toString(),
+                            style: TextStyle(
+                                fontSize: 25, fontWeight: FontWeight.w300),
+                          ),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Text(
+                            "입고중",
+                            style: TextStyle(
+                              color: Color.fromRGBO(118, 118, 118, 100),
                             ),
-                            Text(
-                              "재고",
-                              style: TextStyle(
-                                color: Color.fromRGBO(118, 118, 118, 100),
-                              ),
+                          )
+                        ],
+                      ),
+                      SizedBox(
+                        width: screenWidth * 0.07,
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            widget.currentStock.neededStocks.toString(),
+                            style: TextStyle(
+                                fontSize: 25, fontWeight: FontWeight.w300),
+                          ),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Text(
+                            "필요재고",
+                            style: TextStyle(
+                              color: Color.fromRGBO(118, 118, 118, 100),
                             ),
-                          ],
-                        ),
-                        SizedBox(
-                          width: screenWidth * 0.09,
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              widget.currentStock.expectedToInStock.toString(),
-                              style: TextStyle(
-                                  fontSize: 25, fontWeight: FontWeight.w300),
-                            ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Text(
-                              "입고중",
-                              style: TextStyle(
-                                color: Color.fromRGBO(118, 118, 118, 100),
-                              ),
-                            )
-                          ],
-                        ),
-                        SizedBox(
-                          width: screenWidth * 0.07,
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              widget.currentStock.neededStocks.toString(),
-                              style: TextStyle(
-                                  fontSize: 25, fontWeight: FontWeight.w300),
-                            ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Text(
-                              "필요재고",
-                              style: TextStyle(
-                                color: Color.fromRGBO(118, 118, 118, 100),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ) //재고정보
                 ],
               ),
@@ -352,9 +367,9 @@ class _StockCardState extends State<StockCard> {
                     MaterialPageRoute(
                         builder: (context) => StockInfo(
                             currentstock: widget.currentStock,
-                            updateStock: widget.updateStock)));
+                            updateScreen: widget.updateStock)));
               },
-              icon: Icon(Icons.menu_open)),
+              icon: Icon(Icons.menu)),
           right: screenWidth * 0.03,
           top: 2,
         ),
@@ -366,7 +381,7 @@ class _StockCardState extends State<StockCard> {
             width: 50,
             height: 26,
             decoration: BoxDecoration(
-              color: Color.fromRGBO(255, 80, 80, 100),
+              color: imageBoarderColor(percentage),
               borderRadius: BorderRadius.circular(15),
             ),
             child: Center(
@@ -380,6 +395,18 @@ class _StockCardState extends State<StockCard> {
         )
       ]),
     );
+  }
+}
+
+Color imageBoarderColor(int percentage) {
+  if (90 < percentage) {
+    return const Color.fromARGB(255, 47, 179, 27);
+  } else if (60 < percentage) {
+    return Color.fromARGB(255, 26, 151, 234);
+  } else if (35 < percentage) {
+    return const Color.fromARGB(255, 255, 109, 42);
+  } else {
+    return const Color.fromARGB(255, 255, 72, 72);
   }
 }
 

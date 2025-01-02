@@ -1,9 +1,1 @@
-{
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
-  "storage": {
-    "rules": "storage.rules"
-  }
-}
+{"flutter":{"platforms":{"android":{"default":{"projectId":"railrock-ccb59","appId":"1:1069701162286:android:20717189c95f65486f06bf","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"railrock-ccb59","configurations":{"android":"1:1069701162286:android:20717189c95f65486f06bf","ios":"1:1069701162286:ios:e73a8dfa29417a836f06bf","macos":"1:1069701162286:ios:e73a8dfa29417a836f06bf","web":"1:1069701162286:web:e7a087d772d67ca26f06bf","windows":"1:1069701162286:web:9240324e256db83e6f06bf"}}}}}}

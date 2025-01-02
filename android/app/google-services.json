@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1069701162286",
+    "project_id": "railrock-ccb59",
+    "storage_bucket": "railrock-ccb59.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1069701162286:android:20717189c95f65486f06bf",
+        "android_client_info": {
+          "package_name": "com.example.railrock"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhA18vde7aLgwLq86a1au-9GT51MQTrig"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:railrock/searchPage.dart';
 import 'package:railrock/stock/stockManage.dart';
-import 'package:railrock/outBound.dart';
+import 'package:railrock/dispatch/outBound.dart';
 
-class Homepage extends StatelessWidget {
+class Homepage extends StatefulWidget {
   const Homepage({super.key});
 
+  @override
+  State<Homepage> createState() => _HomepageState();
+}
+
+class _HomepageState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+            automaticallyImplyLeading: false,
             title: Container(
               child: Column(
                 children: [

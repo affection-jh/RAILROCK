@@ -1,31 +1,35 @@
-import 'package:railrock/stock/stockClass.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:railrock/homePage.dart';
 import 'package:railrock/stock/stockManage.dart';
-
-class Stockenroll extends StatefulWidget {
-  const Stockenroll({super.key});
-  @override
-  State<Stockenroll> createState() => _StockenrollState();
-}
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:railrock/stock/fireMethods.dart';
+import 'stockClass.dart';
 
 TextEditingController _textController = new TextEditingController();
-
 Color defaultCol = Color.fromRGBO(118, 118, 118, 100);
 Color enrolledCol = Color.fromRGBO(0, 0, 0, 0.886);
 Color enrolledHighlitedColor = Color.fromRGBO(255, 80, 80, 100);
 
+class Stockenroll extends StatefulWidget {
+  final VoidCallback updateStock;
+  const Stockenroll({required this.updateStock, super.key});
+  @override
+  State<Stockenroll> createState() => _StockenrollState();
+}
+
 class _StockenrollState extends State<Stockenroll> {
+  late Uint8List imageByte;
   String imagePath = '';
   String category = "카테고리";
   String title = "상품이름";
-  var stocknum = "현재재고";
-  int predicted_stock = 0;
-  var needed_stock = "필요재고";
   String result = '';
+  String url = '';
+  String imagecode = '';
+  var needed_stock = "필요재고";
+  var stocknum = "현재재고";
 
   Color categoryColor = defaultCol;
   Color titleColor = defaultCol;
@@ -42,6 +46,7 @@ class _StockenrollState extends State<Stockenroll> {
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
     double screenWidth = screenSize.width;
+
     //double screenHeight = screenSize.height;
     return Scaffold(
       appBar: AppBar(
@@ -90,9 +95,13 @@ class _StockenrollState extends State<Stockenroll> {
                             source: ImageSource.gallery);
 
                         if (image != null) {
+                          final Uint8List bytes = await image.readAsBytes();
                           setState(() {
                             imagePath = image.path;
+                            imageByte = bytes;
                           });
+
+                          url = await upLoadImages();
                         }
                       },
                       child: Container(
@@ -110,11 +119,10 @@ class _StockenrollState extends State<Stockenroll> {
                             ),
                             child: imagePath.isEmpty
                                 ? Icon(Icons.add)
-                                : kIsWeb // 웹일 때
-                                    ? Image.network(imagePath)
-                                    // 웹에서는 Image.network 사용
+                                : kIsWeb
+                                    ? Image.memory(imageByte)
                                     : Image.file(
-                                        File(imagePath), // 모바일에서는 Image.file 사용
+                                        File(imagePath),
                                         fit: BoxFit.cover,
                                       )),
                       ),
@@ -131,7 +139,7 @@ class _StockenrollState extends State<Stockenroll> {
                           GestureDetector(
                             onTap: () async {
                               result = await _showCategotyDiaglog();
-                              if (result != Null) {
+                              if (result != '') {
                                 setState(() {
                                   isCheckoutValid();
                                   category = result;
@@ -151,7 +159,7 @@ class _StockenrollState extends State<Stockenroll> {
                           GestureDetector(
                             onTap: () async {
                               result = await _showAddDiaglog('상품이름');
-                              if (result != Null) {
+                              if (result != '') {
                                 setState(() {
                                   title = result;
                                   titleColor = enrolledCol;
@@ -243,21 +251,18 @@ class _StockenrollState extends State<Stockenroll> {
                 ),
                 onPressed: (buttonColor == buttonEnrolledColer)
                     ? () {
-                        Stock stock = new Stock(
+                        Stock stock = Stock(
                             category: category,
-                            imagePath: imagePath,
+                            imageUrl: url,
+                            imageCode: imagecode,
                             title: title,
+                            trackingInfoList: [],
                             stocks: int.parse(stocknum),
-                            expectedToInStock: predicted_stock,
+                            expectedToInStock: 0,
                             neededStocks: int.parse(needed_stock));
-                        stocks.add(stock);
-                        if (stock.category == "기관차")
-                          locomotive.add(stock);
-                        else if (stock.category == "객차")
-                          passenger_car.add(stock);
-                        else if (stock.category == "화차")
-                          cargo_car.add(stock);
-                        else if (stock.category == "악세서리") accessory.add(stock);
+                        saveStockToFirestore(stock);
+                        allStocks.add(stock);
+                        categorizeFromlastElement();
 
                         Navigator.push(
                             context,
@@ -269,6 +274,36 @@ class _StockenrollState extends State<Stockenroll> {
         ],
       ),
     );
+  }
+
+  Future<String> upLoadImages() async {
+    final storageRef = FirebaseStorage.instance.ref();
+    String url;
+    String currentTime = DateTime.now().millisecondsSinceEpoch.toString();
+    try {
+      final imagesRef = storageRef.child('post').child(currentTime);
+      imagecode = currentTime;
+
+      kIsWeb
+          ? await imagesRef.putData(imageByte)
+          : await imagesRef.putFile(File(imagePath));
+
+      url = await imagesRef.getDownloadURL();
+
+      return url;
+    } on FirebaseException catch (e) {
+      if (e.code == 'object-not-found') {
+        print('파일을 찾을 수 없습니다');
+        _showSnackbar('파일을 찾을 수 없습니다');
+      } else if (e.code == 'unauthorized') {
+        print('권한이 없습니다');
+        _showSnackbar('파일 업로드 권한이 없습니다.');
+      } else {
+        print('오류 발생: ${e.message}');
+        _showSnackbar('서버 오류: ${e.message}');
+      }
+      return '';
+    }
   }
 
   void isCheckoutValid() {
@@ -350,7 +385,6 @@ class _StockenrollState extends State<Stockenroll> {
       },
     ).then((value) {
       _textController.clear();
-
       return value ?? Null;
     });
   }
