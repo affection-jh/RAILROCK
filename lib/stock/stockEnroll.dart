@@ -252,14 +252,15 @@ class _StockenrollState extends State<Stockenroll> {
                 onPressed: (buttonColor == buttonEnrolledColer)
                     ? () {
                         Stock stock = Stock(
-                            category: category,
-                            imageUrl: url,
-                            imageCode: imagecode,
-                            title: title,
-                            trackingInfoList: [],
-                            stocks: int.parse(stocknum),
-                            expectedToInStock: 0,
-                            neededStocks: int.parse(needed_stock));
+                          category: category,
+                          imageUrl: url,
+                          imageCode: imagecode,
+                          title: title,
+                          trackingInfoList: [],
+                          stocks: int.parse(stocknum),
+                          expectedToInStock: 0,
+                          neededStocks: int.parse(needed_stock),
+                        );
                         saveStockToFirestore(stock);
                         allStocks.add(stock);
                         categorizeFromlastElement();

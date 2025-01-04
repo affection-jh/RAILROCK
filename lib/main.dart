@@ -5,7 +5,6 @@ import 'firebase_options.dart';
 import 'package:railrock/stock/stockClass.dart';
 import 'package:railrock/stock/fireMethods.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

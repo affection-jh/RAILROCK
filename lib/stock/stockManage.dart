@@ -24,6 +24,7 @@ class _StockmanageState extends State<Stockmanage> {
   @override
   void initState() {
     super.initState();
+
     updateScreen();
   }
 
@@ -227,7 +228,6 @@ class _StockCardState extends State<StockCard> {
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
     double screenWidth = screenSize.width;
-    // double screenHight = screenSize.height;
 
     int percentage = calculatePercentage(
         widget.currentStock.stocks, widget.currentStock.neededStocks);

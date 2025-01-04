@@ -9,6 +9,7 @@ class Stock {
   int stocks; // Current stock amount
   int expectedToInStock; // Expected stock in the future
   int neededStocks;
+
   // Number of stocks needed
   // Constructor
   Stock({
