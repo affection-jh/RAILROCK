@@ -70,7 +70,6 @@ class _TrackingUIState extends State<TrackingUI> {
                           Clipboard.setData(ClipboardData(
                                   text: trackingData!['trackingNumberInKorea']))
                               .then((_) {
-                            // 복사 완료 후 알림
                             _showSnackbar('운송장번호 복사됨');
                           });
                         },

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:railrock/dispatch/newOrderClass.dart';
 import 'package:railrock/homePage.dart';
 import 'package:railrock/dispatch/newOrderCard.dart';
+import 'package:railrock/dispatch/newOrderClass.dart';
 
 List<NewOrder> newOrdersList = [];
 List<NewOrder> inTransitList = [];
@@ -11,6 +11,7 @@ Color checkedColor = Color.fromRGBO(255, 80, 80, 100);
 Color newOrderPageColor = const Color.fromARGB(180, 80, 80, 100);
 Color inTransitPageColor = const Color.fromARGB(180, 80, 80, 100);
 Color local_shipping_iconColor = const Color.fromARGB(180, 80, 80, 100);
+Color defaultColor = const Color.fromARGB(180, 80, 80, 100);
 
 class OutBound extends StatefulWidget {
   const OutBound({super.key});
@@ -23,6 +24,18 @@ class _OutBoundState extends State<OutBound> {
   @override
   void initState() {
     newOrderPageColor = checkedColor;
+    newOrdersList.add(NewOrder(
+        name: '박미경',
+        productName: '7400',
+        qty: 1,
+        tel: '010-7162-1979',
+        date: '2025.01.03',
+        paid: '결재완료',
+        adress: '경기도 안양시 만안구 박달로 453 한라비발디 아파트 105동 503호(안앙시 만안구 호계동아님 한라비발디)',
+        msg: '문앞에 배송해주세요',
+        bookCode: '101-374-3495',
+        tn: '336388849372945'));
+    displayList = newOrdersList;
     super.initState();
   }
 
@@ -59,6 +72,9 @@ class _OutBoundState extends State<OutBound> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  SizedBox(
+                    width: screenSize.width * 0.02,
+                  ),
                   GestureDetector(
                     onTap: () {
                       setState(() {
@@ -105,36 +121,47 @@ class _OutBoundState extends State<OutBound> {
             Container(
                 height: screenSize.height * 0.6,
                 child: ListView.builder(
-                    itemCount: 1,
+                    itemCount: displayList.length,
                     itemBuilder: (context, index) {
                       return NewOrderCard(
-                          newOrder: NewOrder(
-                              name: '박미경',
-                              productName: '7400',
-                              qty: 1,
-                              tel: '010-7162-1979',
-                              date: '2025.01.03',
-                              paid: '결재완료',
-                              adress:
-                                  '경기도 안양시 만안구 박달로 453 한라비발디 아파트 105동 503호(안앙시 만안구 호계동아님 한라비발디)',
-                              msg: '문앞에 배송해주세요',
-                              bookCode: '101-374-3495',
-                              tn: '336388849372945'));
+                        checkedCheck: checkedCheck,
+                        newOrder: displayList[index],
+                      );
                     })),
           ],
         ),
         Positioned(
-            child: IconButton(
-          onPressed: () async {
-            String tn;
-            if (local_shipping_iconColor == checkedColor) {
-              tn = await showTextField('운송장번호를 입력하세요');
-            }
-          },
-          icon: Icon(Icons.local_shipping),
-          iconSize: 20,
-          color: local_shipping_iconColor,
-        ))
+          bottom: screenSize.height * 0.03,
+          right: screenSize.width * 0.05,
+          child: inTransitPageColor == checkedColor
+              ? Container()
+              : IconButton(
+                  onPressed: () async {
+                    String tn;
+                    if (local_shipping_iconColor == checkedColor) {
+                      tn = await showTextField('운송장번호를 입력하세요');
+                      if (tn != '') {
+                        tnEnroll(tn);
+                        setState(() {
+                          local_shipping_iconColor = defaultColor;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("발송처리가 완료되었습니다")));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("올바른 운송장번호를 입력해주세요")));
+                      }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text("발송처리할 주문건을 선택해주세요"),
+                      ));
+                    }
+                  },
+                  icon: Icon(Icons.local_shipping),
+                  iconSize: 40,
+                  color: local_shipping_iconColor,
+                ),
+        )
       ]),
     );
   }
@@ -175,11 +202,29 @@ class _OutBoundState extends State<OutBound> {
   }
 
   void checkedCheck() {
-    for (int i = 0; i < newOrdersList.length; i++) {
-      if (newOrdersList[i].isChecked) {
-        setState(() {
-          local_shipping_iconColor = checkedColor;
-        });
+    bool isChecked = false;
+    for (int i = 0; i < displayList.length; i++) {
+      if (displayList[i].isChecked) {
+        isChecked = true;
+        break;
+      }
+    }
+    setState(() {
+      local_shipping_iconColor = isChecked ? checkedColor : defaultColor;
+    });
+  }
+
+  void tnEnroll(String tn) {
+    for (int i = 0; i < displayList.length; i++) {
+      if (displayList[i].isChecked) {
+        displayList[i].tn = tn;
+        saveOrdersToFirebase(displayList[i]);
+        inTransitList.add(displayList[i]);
+        if (displayList[i].tn != '') {
+          displayList.removeAt(i);
+          newOrdersList
+              .removeWhere((order) => order.name == displayList[i].name);
+        }
       }
     }
   }

@@ -195,7 +195,7 @@ class _StockmanageState extends State<Stockmanage> {
           height: 20,
         ),
         Container(
-          height: screenSize.height * 0.7,
+          height: screenSize.height * 0.85,
           child: ListView.builder(
             itemCount: displayStocks.length,
             itemBuilder: (context, index) {

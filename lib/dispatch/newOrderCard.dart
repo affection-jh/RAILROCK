@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:railrock/dispatch/newOrderClass.dart';
+import 'package:railrock/dispatch/outBound.dart';
 
 class NewOrderCard extends StatefulWidget {
+  final VoidCallback checkedCheck;
   final NewOrder newOrder;
+
   NewOrderCard({
+    required this.checkedCheck,
     required this.newOrder,
   });
   @override
@@ -36,19 +41,29 @@ class _NewOrderCardState extends State<NewOrderCard> {
               ),
             ),
             Positioned(
-              child: Checkbox(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15)),
-                value: isChecked,
-                onChanged: (value) {
-                  setState(() {
-                    isChecked = value!;
-                    widget.newOrder.isChecked = isChecked;
-                  });
-                },
-                activeColor: Color.fromRGBO(255, 80, 80, 100),
-                checkColor: Colors.white,
-              ),
+              child: inTransitPageColor == checkedColor
+                  ? Container()
+                  : Checkbox(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
+                      value: isChecked,
+                      onChanged: (value) {
+                        setState(() {
+                          isChecked = value!;
+                          if (isChecked) {
+                            widget.newOrder.isChecked = true;
+
+                            widget.checkedCheck();
+                          } else {
+                            widget.newOrder.isChecked = false;
+                            widget.checkedCheck();
+                          }
+                          print('${isChecked}');
+                        });
+                      },
+                      activeColor: Color.fromRGBO(255, 80, 80, 100),
+                      checkColor: Colors.white,
+                    ),
               top: 10,
               left: 10,
             ),
@@ -73,7 +88,7 @@ class _NewOrderCardState extends State<NewOrderCard> {
                           color: const Color.fromARGB(180, 80, 80, 100)),
                     ),
                     SizedBox(
-                      width: screenSize.width * 0.02,
+                      width: screenSize.width * 0.034,
                     ),
                     Text(widget.newOrder.qty.toString())
                   ],
@@ -91,7 +106,7 @@ class _NewOrderCardState extends State<NewOrderCard> {
                           color: const Color.fromARGB(180, 80, 80, 100)),
                     ),
                     SizedBox(
-                      width: screenSize.width * 0.02,
+                      width: screenSize.width * 0.034,
                     ),
                     Text(widget.newOrder.name)
                   ],
@@ -109,9 +124,25 @@ class _NewOrderCardState extends State<NewOrderCard> {
                           color: const Color.fromARGB(180, 80, 80, 100)),
                     ),
                     SizedBox(
-                      width: screenSize.width * 0.02,
+                      width: screenSize.width * 0.034,
                     ),
-                    Text(widget.newOrder.tel)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                          onPressed: () {
+                            Clipboard.setData(
+                                    ClipboardData(text: widget.newOrder.tel))
+                                .then((_) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  (SnackBar(
+                                      content: Text("전화번호가 클립보드에 복사되었습니다"))));
+                            });
+                          },
+                          child: Text(
+                            widget.newOrder.tel,
+                            style: TextStyle(color: Colors.black),
+                          )),
+                    ),
                   ],
                 ),
                 SizedBox(
@@ -127,7 +158,7 @@ class _NewOrderCardState extends State<NewOrderCard> {
                           color: const Color.fromARGB(180, 80, 80, 100)),
                     ),
                     SizedBox(
-                      width: screenSize.width * 0.02,
+                      width: screenSize.width * 0.034,
                     ),
                     Text(widget.newOrder.date)
                   ],
@@ -145,7 +176,7 @@ class _NewOrderCardState extends State<NewOrderCard> {
                           color: const Color.fromARGB(180, 80, 80, 100)),
                     ),
                     SizedBox(
-                      width: screenSize.width * 0.02,
+                      width: screenSize.width * 0.034,
                     ),
                     Text(widget.newOrder.paid)
                   ],
@@ -164,9 +195,23 @@ class _NewOrderCardState extends State<NewOrderCard> {
                       width: screenSize.width * 0.02,
                     ),
                     Expanded(
-                        child: Text(
-                      widget.newOrder.adress,
-                      softWrap: true,
+                        child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                          onPressed: () {
+                            Clipboard.setData(
+                                    ClipboardData(text: widget.newOrder.adress))
+                                .then((_) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("주소가 클립보드에 복사되었습니다")),
+                              );
+                            });
+                          },
+                          child: Text(
+                            widget.newOrder.adress,
+                            style: TextStyle(color: Colors.black),
+                            softWrap: true,
+                          )),
                     ))
                   ],
                 ),
@@ -201,7 +246,9 @@ class _NewOrderCardState extends State<NewOrderCard> {
                     SizedBox(
                       width: screenSize.width * 0.02,
                     ),
-                    Text(widget.newOrder.bookCode),
+                    Text(widget.newOrder.tn == ''
+                        ? widget.newOrder.bookCode
+                        : widget.newOrder.tn),
                     SizedBox(
                       width: screenSize.width * 0.002,
                     ),
