@@ -54,7 +54,7 @@ class _NewOrderCardState extends State<NewOrderCard> {
             ),
           ]),
           SizedBox(
-            height: screenSize.height * 0.005,
+            height: screenSize.height * 0.006,
           ),
           Container(
             margin: EdgeInsets.only(
