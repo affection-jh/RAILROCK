@@ -18,6 +18,7 @@ class NewOrderCard extends StatefulWidget {
 class _NewOrderCardState extends State<NewOrderCard> {
   bool isChecked = false;
 
+
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
